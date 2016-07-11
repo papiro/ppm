@@ -1,0 +1,3 @@
+[submodule "binz"]
+	path = binz
+	url = git@godswhim.us:binz.git
