@@ -1,0 +1,160 @@
+#!/bin/bash
+
+source $(dirname $0)/colors.sh &>/dev/null  
+
+local_repo="~/Desktop/bomb_shelt/" #.ppm/repos/"
+
+read -d "" rcTemplate << EOS
+# Project name
+  name=
+
+# Project repositories
+  primary=
+  secondary=
+  tertiary=
+
+# Project submodules
+EOS
+
+# Associative arrays are iterated out-of-order.  Hence - two arrays.
+readonly -a rcFields=(
+  "name"
+  "primary"
+  "secondary"
+  "tertiary"
+)
+readonly -a fieldDescriptions=(
+  "Project Name"
+  "Primary"
+  "Secondary"
+  "Tertiary"
+)
+
+function get()
+{
+  echo `grep -oP "(?<=$1=).*$" .ppmrc`  
+}
+
+# Similar to `npm install`: builds out a project based on a .ppmrc
+function install()
+{
+  if [ ! -e .ppmrc ]; then 
+    printf "${red}No .ppmrc\n"
+    exit 1
+  fi
+
+  # Add user 'git'
+#  if grep -E "(primary|secondary|tertiary)=git@localhost:" .ppmrc &>/dev/null; then
+#    printf "1. ${bold}Adding user \"git\" (${green}sudo adduser --no-create-home --disabled-password --gecos \"\" git${default}) for ownership of local repos.\n"
+#    printf ""
+#    printf "${underline}Press any key to continue..."
+#    read -sn1 key
+#    printf "${reset}\n\n"
+#    sudo adduser --disabled-password --gecos "" git || exit 1
+#    sudo adduser `whoami` git
+#    sudo chmod g+w -R /home/git
+#  fi
+#  
+#  # Add user key to git-user's authorized users
+#  if [[ ! -e ~/.ssh/ppmid_rsa.pub ]]; then
+#    mkdir ~/.ssh &>/dev/null
+#    ssh-keygen -f ~/.ssh/ppmid_rsa -q -t rsa -N ""
+#    sudo -u git mkdir /home/git/.ssh/
+#    sudo -u git cat ~/.ssh/ppmid_rsa.pub >> /home/git/.ssh/authorized_keys
+#  fi
+
+  printf ${blue}
+  if git init && \
+    git remote add origin $(get primary); then
+    printf "\n${blue}Set fetch URL `get primary`"
+  fi
+  for remote in primary secondary tertiary; do
+    if git remote set-url --add --push origin $(get $remote); then
+      printf "${blue}Set push URL `get $remote`" 
+    fi
+  done
+  printf "\n"
+}
+
+function path()
+{
+  if echo "export PATH+=:`pwd`" >> ~/.bashrc; then
+    printf "${blue}`pwd` added to PATH permanently in ~/.bashrc"
+  else
+    printf "${red}There was an error adding `pwd` to PATH in ~/.bashrc"
+  fi
+  printf ${reset}
+}
+
+# Add a new dependency (git submodule)
+function add()
+{
+  git submodule add `get "primary"`$1.git
+  git submodule init
+  git submodule update
+}
+
+# Initialize a directory as a new git project
+function init()
+{
+  printf "**********************************\n"
+  printf "***  ${lightBlue}Phreedom Package Manager${reset}  *** ...by papiro\n"
+  printf "**********************************\n\n"
+
+  if [ -e .ppmrc ]; then
+    printf "${yellow}Already initialized .ppmrc\n\n"
+    exit 1
+  fi
+  
+  printf "${BGblue}${lightYellow}"
+
+  cat <<EOT
+    Instructions${fillLine}
+   ==============${fillLine}
+   Primary, Secondary, and Tertiary are the Git repo URL's you will use to version-control/backup your project.${fillLine}
+${fillLine}
+Use a local path (i.e. ${local_repo}) if you'd prefer to use a local repository.${fillLine}
+${fillLine}
+   Having 3 allows some replication in (preferrably remote) backups.${fillLine}
+${fillLine}
+   git@<domain:username><project-name>.git <-- Make sure to enter the full identifier, and that the repos already exist.  PPM will not create the repos for you.${fillLine}
+${fillLine} 
+   To create a local repo, ${dim}do ${bold}git init --bare ${local_repo}${reset}${fillLine}
+
+EOT
+  printf "${reset}"
+
+  for i in ${!rcFields[@]}; do
+    field=${rcFields[$i]}
+    while true; do
+      printf "${reset}${fieldDescriptions[$i]}: ${lightYellow}"
+      read ${field}
+      if [[ -n ${!field} ]]; then
+        rcTemplate=${rcTemplate//${field}=/${field}=${!field}}
+        break
+      fi
+    done
+  done
+
+  # reset color
+  printf "${reset}"
+  ###
+
+  echo "${rcTemplate}" > .ppmrc && printf "${lightGreen}.ppmrc created\n\n"
+  install
+}
+
+function link()
+{
+  export PATH+=$(pwd)/bin
+  exec /bin/bash
+}
+
+if [ -z "$@" ]; then
+  printf "Commands: \n"
+  printf "${lightGreen}1. init\n"
+  printf "${lightGreen}2. install\n"
+  printf "${lightGreen}3. add\n"
+fi
+
+`${!1}` $@
