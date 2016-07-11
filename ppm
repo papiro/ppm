@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source $(dirname $0)/colors.sh &>/dev/null  
+source $(dirname $0)/binz/colorsh &>/dev/null  
 
 local_repo="~/Desktop/bomb_shelt/" #.ppm/repos/"
 
