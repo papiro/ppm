@@ -2,8 +2,6 @@
 
 source $(dirname $0)/binz/colorsh &>/dev/null  
 
-local_repo="~/Desktop/bomb_shelt/" #.ppm/repos/"
-
 read -d "" rcTemplate << EOS
 # Project name
   name=
@@ -35,35 +33,51 @@ function get()
   echo `grep -oP "(?<=$1=).*$" .ppmrc`  
 }
 
+function clean()
+{
+  git remote remove origin &>/dev/null || true
+}
+
 function install()
 {
-  if [ ! -e .ppmrc ]; then 
-    printf "${red}No .ppmrc\n"
-    exit 1
-  fi
-
-  printf ${blue}
-  if git init && \
-    git remote add origin $(get primary); then
-    printf "\n${blue}Set fetch URL `get primary`\n"
-  fi
-  restore
-  printf "\n"
+  echo install does nothing
+#  if [ ! -e .ppmrc ]; then 
+#    printf "${red}No .ppmrc\n" >&2
+#    exit 1
+#  fi
+#
+#  printf ${lightGreen}
+#  if git init && \
+#    clean && \
+#    git remote add origin $(get primary); then
+#    printf "\n${lightGreen}Set fetch URL `get primary`\n${reset}"
+#  fi
+#  restore
+#  printf "\n"
 }
 
 function restore()
 {
+  clean
+  printf ${lightGreen}
+  if git remote add origin $(get primary); then
+    printf "\n${lightGreen}Set fetch URL `get primary`\n${reset}"
+  fi
   for remote in primary secondary tertiary; do
     if git remote set-url --add --push origin $(get $remote); then
-      printf "${blue}Set push URL `get $remote`\n" 
+      printf "${lightGreen}Set push URL `get $remote`\n" 
     fi
   done
+  printf "\n"
 }
 
 function path()
 {
-  if echo "export PATH+=:`pwd`" >> ~/.bashrc; then
-    printf "${blue}`pwd` added to PATH permanently in ~/.bashrc"
+  pathAppend="export PATH+=:`pwd`"
+  if grep "^${pathAppend}$" ~/.bashrc; then
+    printf "${yellow}`pwd` already added to PATH permanently in ~/.bashrc"
+  elif echo "" >> ~/.bashrc; then
+    printf "${green}`pwd` added to PATH permanently in ~/.bashrc"
   else
     printf "${red}There was an error adding `pwd` to PATH in ~/.bashrc"
   fi
@@ -100,13 +114,13 @@ function init()
    ==============${fillLine}
    Primary, Secondary, and Tertiary are the Git repo URL's you will use to version-control/backup your project.${fillLine}
 ${fillLine}
-Use a local path (i.e. ${local_repo}) if you'd prefer to use a local repository.${fillLine}
+Use a local path (i.e. (~/backups) if you'd prefer to use a local repository.${fillLine}
 ${fillLine}
    Having 3 allows some replication in (preferrably remote) backups.${fillLine}
 ${fillLine}
    git@<domain:username><project-name>.git <-- Make sure to enter the full identifier, and that the repos already exist.  PPM will not create the repos for you.${fillLine}
 ${fillLine} 
-   To create a local repo, ${dim}do ${bold}git init --bare ${local_repo}${reset}${fillLine}
+   To create a local repo, ${dim}do ${bold}git init --bare ~/backups/<project-name>.git${reset}${fillLine}
 
 EOT
   printf "${reset}"
@@ -128,7 +142,7 @@ EOT
   ###
 
   echo "${rcTemplate}" > .ppmrc && printf "${lightGreen}.ppmrc created\n\n"
-  install
+  restore
 }
 
 function link()
