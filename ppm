@@ -105,13 +105,9 @@ function init()
    ==============${fillLine}
    Primary, Secondary, and Tertiary are the Git repo URL's you will use to version-control/backup your project.${fillLine}
 ${fillLine}
-Use a local path (i.e. (~/backups) if you'd prefer to use a local repository.${fillLine}
-${fillLine}
-   Having 3 allows some replication in (preferrably remote) backups.${fillLine}
-${fillLine}
    git@<domain:username><project-name>.git <-- Make sure to enter the full identifier, and that the repos already exist.  PPM will not create the repos for you.${fillLine}
 ${fillLine} 
-   To create a local repo, ${dim}do ${bold}git init --bare ~/backups/<project-name>.git${reset}${fillLine}
+   To create a local repo: ${bold}git init --bare ~/backups/<project-name>.git${reset}${fillLine}
 
 EOT
   printf "${reset}"
