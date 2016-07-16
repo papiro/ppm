@@ -63,14 +63,14 @@ function install()
 function path()
 {
   pathAppend="export PATH+=:`pwd`"
-  if grep "^${pathAppend}$" ~/.bashrc; then
+  if grep "^${pathAppend}$" ~/.bashrc &>/dev/null; then
     printf "${yellow}`pwd` already added to PATH permanently in ~/.bashrc"
-  elif echo "" >> ~/.bashrc; then
+  elif echo $pathAppend >> ~/.bashrc; then
     printf "${green}`pwd` added to PATH permanently in ~/.bashrc"
   else
     printf "${red}There was an error adding `pwd` to PATH in ~/.bashrc"
   fi
-  printf ${reset}
+  printf "${reset}\n\n"
 }
 
 # Add a new dependency (git submodule)
