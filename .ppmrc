@@ -7,3 +7,4 @@
   tertiary=~/backups/ppm.git
 
 # Project submodules
+  git@godswhim.us:binz.git

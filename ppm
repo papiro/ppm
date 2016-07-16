@@ -40,24 +40,6 @@ function clean()
 
 function install()
 {
-  echo install does nothing
-#  if [ ! -e .ppmrc ]; then 
-#    printf "${red}No .ppmrc\n" >&2
-#    exit 1
-#  fi
-#
-#  printf ${lightGreen}
-#  if git init && \
-#    clean && \
-#    git remote add origin $(get primary); then
-#    printf "\n${lightGreen}Set fetch URL `get primary`\n${reset}"
-#  fi
-#  restore
-#  printf "\n"
-}
-
-function restore()
-{
   clean
   printf ${lightGreen}
   if git remote add origin $(get primary); then
@@ -68,6 +50,13 @@ function restore()
       printf "${lightGreen}Set push URL `get $remote`\n" 
     fi
   done
+  printf "${green}Also installing any submodules -\n"
+  submodules=$(grep -A 10 "^# Project submodules\s*$" .ppmrc | 
+    grep -P "^[^#]" | 
+    sed "s/\s*//")
+
+  add $submodules
+     
   printf "\n"
 }
 
@@ -87,12 +76,14 @@ function path()
 # Add a new dependency (git submodule)
 function add()
 {
-  git submodule add $1
-  git submodule init
-  git submodule update
+  for i in $@; do
+    git submodule add $i
+    git submodule init
+    git submodule update
 
-  echo "\n  $1" >> .ppmrc
-  $(cd $(echo $1 | grep -oP "\w*(?=\.git)") && restore)
+    (cd $(echo $i | grep -oP "\w*(?=\.git)") && install)
+    if ! grep $i .ppmrc &>/dev/null; then printf "  $i\n" >> .ppmrc; fi;
+  done
 }
 
 # Initialize a directory as a new git project
@@ -141,8 +132,8 @@ EOT
   printf "${reset}"
   ###
 
-  echo "${rcTemplate}" > .ppmrc && printf "${lightGreen}.ppmrc created\n\n"
-  restore
+  printf "${rcTemplate}\n" > .ppmrc && printf "${lightGreen}.ppmrc created\n\n"
+  install
 }
 
 function link()
