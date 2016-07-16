@@ -40,6 +40,22 @@ function clean()
 
 function install()
 {
+  installSubmodules
+  installRemotes  
+}
+
+function installSubmodules()
+{
+  printf "${green}Installing any submodules -\n"
+  submodules=$(grep -A 10 "^# Project submodules\s*$" .ppmrc | 
+    grep -P "^[^#]" | 
+    sed "s/\s*//")
+
+  add $submodules
+}
+
+function installRemotes()
+{
   clean
   printf ${lightGreen}
   if git remote add origin $(get primary); then
@@ -50,13 +66,6 @@ function install()
       printf "${lightGreen}Set push URL `get $remote`\n" 
     fi
   done
-  printf "${green}Also installing any submodules -\n"
-  submodules=$(grep -A 10 "^# Project submodules\s*$" .ppmrc | 
-    grep -P "^[^#]" | 
-    sed "s/\s*//")
-
-  add $submodules
-     
   printf "\n"
 }
 
@@ -129,7 +138,7 @@ EOT
   ###
 
   printf "${rcTemplate}\n" > .ppmrc && printf "${lightGreen}.ppmrc created\n\n"
-  install
+  installRemotes
 }
 
 function link()
