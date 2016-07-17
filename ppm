@@ -138,6 +138,7 @@ EOT
   ###
 
   printf "${rcTemplate}\n" > .ppmrc && printf "${lightGreen}.ppmrc created\n\n"
+  git init
   installRemotes
 }
 
