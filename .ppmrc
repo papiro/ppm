@@ -4,7 +4,7 @@
 # Project repositories
   primary=git@godswhim.us:ppm.git
   secondary=git@gitlab.com:papiro/ppm.git
-  tertiary=~/backups/ppm.git
+  tertiary=/var/backups/ppm.git
 
 # Project submodules
   git@godswhim.us:binz.git
