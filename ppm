@@ -121,17 +121,38 @@ ${fillLine}
 EOT
   printf "${reset}"
 
-  for i in ${!rcFields[@]}; do
-    field=${rcFields[$i]}
-    while true; do
-      printf "${reset}${fieldDescriptions[$i]}: ${lightYellow}"
-      read ${field}
-      if [[ -n ${!field} ]]; then
-        rcTemplate=${rcTemplate//${field}=/${field}=${!field}}
-        break
-      fi
+  if [[ $1 == "-d" ]]; then
+    for i in name primary secondary tertiary; do
+      case $i in
+        name)
+          printf "${reset}${fieldDescriptions[name]}: ${lightYellow}"
+          read name
+          ;;
+        primary)
+          url="git@godswhim.us:"
+          ;;
+        secondary)
+          url="git@gitlab.com:papiro/"
+          ;;
+        tertiary)
+          url="/var/backups/"
+          ;;
+      esac
+      rcTemplate=${rcTemplate//${i}=/${i}=${url}${name}.git}
     done
-  done
+  else
+    for i in ${!rcFields[@]}; do
+      field=${rcFields[$i]}
+      while true; do
+        printf "${reset}${fieldDescriptions[$i]}: ${lightYellow}"
+        read ${field}
+        if [[ -n ${!field} ]]; then
+          rcTemplate=${rcTemplate//${field}=/${field}=${!field}}
+          break
+        fi
+      done
+    done
+  fi
 
   # reset color
   printf "${reset}"
