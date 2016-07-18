@@ -116,7 +116,7 @@ function init()
 ${fillLine}
    git@<domain:username><project-name>.git <-- Make sure to enter the full identifier, and that the repos already exist.  PPM will not create the repos for you.${fillLine}
 ${fillLine} 
-   To create a local repo: ${bold}git init --bare ~/backups/<project-name>.git${reset}${fillLine}
+   To create a local repo: ${bold}git init --bare /var/backups/<project-name>.git${reset}${fillLine}
 
 EOT
   printf "${reset}"
