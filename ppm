@@ -100,7 +100,7 @@ function init()
 {
   printf "**********************************\n"
   printf "***  ${lightBlue}Phreedom Package Manager${reset}  *** ...by papiro\n"
-  printf "**********************************\n\n"
+  printf "**** ${blue}- \"Reinvent the wheel.\"${reset} *****\n\n"
 
   if [ -e .ppmrc ]; then
     printf "${yellow}Already initialized .ppmrc\n\n"
