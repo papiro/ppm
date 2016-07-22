@@ -30,7 +30,7 @@ readonly -a fieldDescriptions=(
 
 function get()
 {
-  echo `grep -oP "(?<=$1=).*$" .ppmrc`  
+  echo `grep -oP "(?<=$1=).*$" $2`  
 }
 
 function clean()
@@ -58,12 +58,12 @@ function installRemotes()
 {
   clean
   printf ${lightGreen}
-  if git remote add origin $(get primary); then
-    printf "\n${lightGreen}Set fetch URL `get primary`\n${reset}"
+  if git remote add origin $(get primary .ppmrc); then
+    printf "\n${lightGreen}Set fetch URL `get primary .ppmrc`\n${reset}"
   fi
   for remote in primary secondary tertiary; do
-    if git remote set-url --add --push origin $(get $remote); then
-      printf "${lightGreen}Set push URL `get $remote`\n" 
+    if git remote set-url --add --push origin $(get $remote .ppmrc); then
+      printf "${lightGreen}Set push URL `get $remote .ppmrc`\n" 
     fi
   done
   printf "\n"
@@ -106,40 +106,25 @@ function init()
     printf "${yellow}Already initialized .ppmrc\n\n"
     exit 1
   fi
-  
-  printf "${BGblue}${lightYellow}"
-
-  cat <<EOT
-    Instructions${fillLine}
-   ==============${fillLine}
-   Primary, Secondary, and Tertiary are the Git repo URL's you will use to version-control/backup your project.${fillLine}
-${fillLine}
-   git@<domain:username><project-name>.git <-- Make sure to enter the full identifier, and that the repos already exist.  PPM will not create the repos for you.${fillLine}
-${fillLine} 
-   To create a local repo: ${bold}git init --bare /var/backups/<project-name>.git${reset}${fillLine}
-
-EOT
-  printf "${reset}"
 
   if [[ $1 == "-d" ]]; then
-    for i in name primary secondary tertiary; do
-      case $i in
-        name)
-          printf "${reset}${fieldDescriptions[name]}: ${lightYellow}"
-          read name
-          ;;
-        primary)
-          url="git@godswhim.us:"
-          ;;
-        secondary)
-          url="git@gitlab.com:papiro/"
-          ;;
-        tertiary)
-          url="/var/backups/"
-          ;;
-      esac
-      rcTemplate=${rcTemplate//${i}=/${i}=${url}${name}.git}
-    done
+    if [[ -e ppm.conf ]]; then
+      for i in name primary secondary tertiary; do
+        case $i in
+          name)
+            printf "${reset}${fieldDescriptions[name]}: ${lightYellow}"
+            read name
+            val=$name
+            ;;
+          *)
+            val=`get $i ppm.conf`${name}.git
+            ;;
+        esac
+        rcTemplate=${rcTemplate//$i=/$i=$val}
+      done
+    else
+      printf "${red}No ppm.conf found in ppm directory${reset}"
+    fi
   else
     for i in ${!rcFields[@]}; do
       field=${rcFields[$i]}
@@ -163,6 +148,7 @@ EOT
   installRemotes
 }
 
+
 function link()
 {
   export PATH+=$(pwd)/bin
@@ -175,5 +161,23 @@ if [[ -z $1 ]]; then
   printf "${lightGreen}2. install\n"
   printf "${lightGreen}3. add\n"
 fi
+
+function -h()
+{
+  cat <<EOT
+Usage: ppm [command] [option(s)]
+
+  -h      display usage instructions
+  -d      use default template in ppm.conf (only useful with the 'init' command)
+
+${BGblue}${lightYellow}
+   Primary, Secondary, and Tertiary are the Git repo URL's you will use to version-control/backup your project.${fillLine}
+${fillLine}
+   git@<domain:username><project-name>.git <-- Make sure to enter the full identifier, and that the repos already exist.  PPM will not create the repos for you.${fillLine}
+${fillLine} 
+   To create a local repo: ${bold}git init --bare /var/backups/<project-name>.git${fillLine}${reset}
+EOT
+  printf "${reset}"
+}
 
 `${!1}` $@
