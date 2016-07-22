@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source $(dirname $0)/binz/colorsh &>/dev/null  
+readonly _dirname=`dirname $0`
+source $_dirname/binz/colorsh &>/dev/null  
 
 read -d "" rcTemplate << EOS
 # Project name
@@ -79,7 +80,7 @@ function path()
   else
     printf "${red}There was an error adding `pwd` to PATH in ~/.bashrc"
   fi
-  printf "${reset}\n\n"
+  printf "${reset}\n"
 }
 
 # Add a new dependency (git submodule)
@@ -108,7 +109,7 @@ function init()
   fi
 
   if [[ $1 == "-d" ]]; then
-    if [[ -e ppm.conf ]]; then
+    if [[ -e $_dirname/ppm.conf ]]; then
       for i in name primary secondary tertiary; do
         case $i in
           name)
@@ -117,13 +118,14 @@ function init()
             val=$name
             ;;
           *)
-            val=`get $i ppm.conf`${name}.git
+            val=`get $i $_dirname/ppm.conf`${name}.git
             ;;
         esac
         rcTemplate=${rcTemplate//$i=/$i=$val}
       done
     else
-      printf "${red}No ppm.conf found in ppm directory${reset}"
+      printf "${red}No ppm.conf found in $_dirname/ppm directory${reset}"
+      exit 1
     fi
   else
     for i in ${!rcFields[@]}; do
