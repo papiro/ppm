@@ -3,6 +3,8 @@
 readonly _dirname=`dirname $0`
 source $_dirname/binz/colorsh &>/dev/null  
 
+readonly config=${_dirname}/ppm.conf
+
 read -d "" rcTemplate << EOS
 # Project name
   name=
@@ -72,27 +74,41 @@ function installRemotes()
 
 function path()
 {
-  pathAppend="export PATH+=:`pwd`"
-  if grep "^${pathAppend}$" ~/.bashrc &>/dev/null; then
-    printf "${yellow}`pwd` already added to PATH permanently in ~/.bashrc"
-  elif echo $pathAppend >> ~/.bashrc; then
-    printf "${green}`pwd` added to PATH permanently in ~/.bashrc"
+  dotFile=~/.bashrc
+  _pwd=`pwd`
+  
+  # There's a bug with this regex in that it won't match the second of two consecutive 
+  #   entries of $_pwd in PATH 
+  pathAppend="!(echo \$PATH | grep -P \"(^|:)${_pwd}($|:)\") && export PATH+=:$_pwd"
+
+  if grep "^${pathAppend}$" $dotFile &>/dev/null; then
+    printf "${yellow}$_pwd already added to PATH permanently in $dotFile"
+  elif echo $pathAppend >> $dotFile; then
+    printf "${green}$_pwd added to PATH permanently in $dotFile"
   else
-    printf "${red}There was an error adding `pwd` to PATH in ~/.bashrc"
+    printf "${red}There was an error adding $_pwd to PATH in $dotFile"
   fi
   printf "${reset}\n"
+  exec /bin/bash
 }
 
 # Add a new dependency (git submodule)
 function add()
 {
+  if [[ $1 == "-d" ]]; then
+    default=`get primary $config`
+    shift 1
+  fi
   for i in $@; do
-    git submodule add $i
+    remote=${default}${i}.git
+    git submodule add $remote
     git submodule init
     git submodule update
 
-    (cd $(echo $i | grep -oP "\w*(?=\.git)") && install)
-    if ! grep $i .ppmrc &>/dev/null; then printf "  $i\n" >> .ppmrc; fi;
+    # cd into each submodule and ppm install their submodules
+    (cd $(echo $remote | grep -oP "\w*(?=\.git)") && install)
+    # only add the submodule to the ppmrc if it hasn't already been added
+    if ! grep $remote .ppmrc &>/dev/null; then printf "  $remote\n" >> .ppmrc; fi;
   done
 }
 
@@ -103,13 +119,13 @@ function init()
   printf "***  ${lightBlue}Phreedom Package Manager${reset}  *** ...by papiro\n"
   printf "**** ${blue}- \"Reinvent the wheel.\"${reset} *****\n\n"
 
-  if [ -e .ppmrc ]; then
+  if [[ -e .ppmrc ]]; then
     printf "${yellow}Already initialized .ppmrc\n\n"
     exit 1
   fi
 
   if [[ $1 == "-d" ]]; then
-    if [[ -e $_dirname/ppm.conf ]]; then
+    if [[ -e $config ]]; then
       for i in name primary secondary tertiary; do
         case $i in
           name)
@@ -118,13 +134,13 @@ function init()
             val=$name
             ;;
           *)
-            val=`get $i $_dirname/ppm.conf`${name}.git
+            val=`get $i $config`${name}.git
             ;;
         esac
         rcTemplate=${rcTemplate//$i=/$i=$val}
       done
     else
-      printf "${red}No ppm.conf found in $_dirname/ppm directory${reset}"
+      printf "${red}No ppm.conf found in $config directory${reset}"
       exit 1
     fi
   else
@@ -150,27 +166,34 @@ function init()
   installRemotes
 }
 
-
-function link()
-{
-  export PATH+=$(pwd)/bin
-  exec /bin/bash
-}
-
 if [[ -z $1 ]]; then
   printf "Commands: \n"
-  printf "${lightGreen}1. init\n"
-  printf "${lightGreen}2. install\n"
-  printf "${lightGreen}3. add\n"
+  printf "${lightGreen}"
+  printf "1. init\n"
+  printf "2. install\n"
+  printf "3. installSubmodules\n"
+  printf "4. installRemotes\n"
+  printf "5. add\n"
+  printf "6. path\n"
+  printf "7. clean\n"
 fi
 
 function -h()
 {
   cat <<EOT
-Usage: ppm [command] [option(s)]
+Usage: ppm [command] [option(s)] [argument]
+
+Commands:
+  init              initialize a .ppmrc
+  install           will run "installSubmodules" and "installRemotes"
+  installSubmodules installs submodules of submodules (dependencies of dependencies)
+  installRemotes    use the URLs defined in the .ppmrc to set up the fetch/push git remotes
+  add               add, initialize, and update a git submodule for the current project
+  path              add the current directory to the PATH permanently by writing an export statement to the ~/.bashrc
+  clean             remove git remotes fetch/push URLs named "origin"
 
   -h      display usage instructions
-  -d      use default template in ppm.conf (only useful with the 'init' command)
+  -d      use default template in ppm.conf (use with 'init' or 'add' commands)
 
 ${BGblue}${lightYellow}
    Primary, Secondary, and Tertiary are the Git repo URL's you will use to version-control/backup your project.${fillLine}
