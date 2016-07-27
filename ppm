@@ -1,5 +1,7 @@
 #!/bin/bash
 
+readonly dotFile=~/.bashrc
+readonly _pwd=`pwd`
 readonly _dirname=`dirname $0`
 source $_dirname/binz/colorsh &>/dev/null  
 
@@ -74,8 +76,6 @@ function installRemotes()
 
 function path()
 {
-  dotFile=~/.bashrc
-  _pwd=`pwd`
   
   # There's a bug with this regex in that it won't match the second of two consecutive 
   #   entries of $_pwd in PATH 
@@ -165,18 +165,6 @@ function init()
   installRemotes
 }
 
-if [[ -z $1 ]]; then
-  printf "Commands: \n"
-  printf "${lightGreen}"
-  printf "1. init\n"
-  printf "2. install\n"
-  printf "3. installSubmodules\n"
-  printf "4. installRemotes\n"
-  printf "5. add\n"
-  printf "6. path\n"
-  printf "7. clean\n"
-fi
-
 function -h()
 {
   cat <<EOT
@@ -194,8 +182,8 @@ Commands:
   -h      display usage instructions
   -d      use default template in ppm.conf (use with 'init' or 'add' commands)
 
-${BGblue}${lightYellow}
-   Primary, Secondary, and Tertiary are the Git repo URL's you will use to version-control/backup your project.${fillLine}
+
+${BGblue}${lightYellow}   Primary, Secondary, and Tertiary are the Git repo URL's you will use to version-control/backup your project.${fillLine}
 ${fillLine}
    git@<domain:username><project-name>.git <-- Make sure to enter the full identifier, and that the repos already exist.  PPM will not create the repos for you.${fillLine}
 ${fillLine} 
@@ -204,4 +192,20 @@ EOT
   printf "${reset}"
 }
 
-`${!1}` $@
+if [[ -z $1 ]]; then
+  printf "Commands: \n"
+  printf "${lightGreen}"
+  printf "1. init\n"
+  printf "2. install\n"
+  printf "3. installSubmodules\n"
+  printf "4. installRemotes\n"
+  printf "5. add\n"
+  printf "6. path\n"
+  printf "7. clean\n"
+fi
+
+if [[ `type -t $1` == "function" ]]; then
+  `${!1}` $@
+else
+  $_pwd/$1  
+fi
