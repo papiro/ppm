@@ -100,15 +100,14 @@ function add()
     shift 1
   fi
   for i in $@; do
-    remote=${default}${i}.git
-    git submodule add $remote
-    git submodule init
-    git submodule update
+    repo=${default}${i}.git
+    git submodule add $repo
+    git submodule update --init --recursive
 
-    # cd into each submodule and ppm install their submodules
-    (cd $(echo $remote | grep -oP "\w*(?=\.git)") && install)
+    # cd into each submodule and install their git remotes
+    (cd $(echo $repo | grep -oP "\w*(?=\.git)") && installRemotes)
     # only add the submodule to the ppmrc if it hasn't already been added
-    if ! grep $remote .ppmrc &>/dev/null; then printf "  $remote\n" >> .ppmrc; fi;
+    if ! grep $repo .ppmrc &>/dev/null; then printf "  $repo\n" >> .ppmrc; fi;
   done
 }
 
