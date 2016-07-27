@@ -85,11 +85,11 @@ function path()
     printf "${yellow}$_pwd already added to PATH permanently in $dotFile"
   elif echo $pathAppend >> $dotFile; then
     printf "${green}$_pwd added to PATH permanently in $dotFile"
+    exec /bin/bash
   else
     printf "${red}There was an error adding $_pwd to PATH in $dotFile"
   fi
   printf "${reset}\n"
-  exec /bin/bash
 }
 
 # Add a new dependency (git submodule)
