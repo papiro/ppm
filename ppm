@@ -180,6 +180,7 @@ Commands:
   clean             remove git remotes fetch/push URLs named "origin"
 
   -h      display usage instructions
+  -v      display the last tagged version
   -d      use default template in ppm.conf (use with 'init' or 'add' commands)
 
 
@@ -190,6 +191,11 @@ ${fillLine}
    To create a local repo: ${bold}git init --bare /var/backups/<project-name>.git${fillLine}${reset}
 EOT
   printf "${reset}"
+}
+
+function -v()
+{
+  ( cd $_dirname $>/dev/null && git tag | tail -1 )
 }
 
 if [[ -z $1 ]]; then
@@ -204,7 +210,7 @@ if [[ -z $1 ]]; then
   printf "7. clean\n"
 fi
 
-if [[ `type -t $1` == "function" ]]; then
+if [[ ${1:0:1} == "-" || `type -t $1` == "function" ]]; then
   `${!1}` $@
 else
   $_pwd/$1  
