@@ -79,7 +79,7 @@ function path()
   
   # There's a bug with this regex in that it won't match the second of two consecutive 
   #   entries of $_pwd in PATH 
-  pathAppend="!(echo \$PATH | grep -P \"(^|:)${_pwd}($|:)\") && export PATH+=:$_pwd"
+  pathAppend="! { echo \$PATH | grep -Pq \"(^|:)${_pwd}($|:)\"; } && export PATH+=:$_pwd"
 
   if grep "^${pathAppend}$" $dotFile &>/dev/null; then
     printf "${yellow}$_pwd already added to PATH permanently in $dotFile"
