@@ -66,8 +66,8 @@ function installRemotes()
   if git remote add origin $(get primary .ppmrc); then
     printf "\n${lightGreen}Set fetch URL `get primary .ppmrc`\n${reset}"
   fi
-  for remote in primary secondary tertiary; do
-    if git remote set-url --add --push origin $(get $remote .ppmrc); then
+  for remote in primary secondary tertiary quaternary; do
+    if [[ -n `get $remote .ppmrc` ]] && git remote set-url --add --push origin $(get $remote .ppmrc); then
       printf "${lightGreen}Set push URL `get $remote .ppmrc`\n" 
     fi
   done
@@ -84,7 +84,7 @@ function path()
   if grep "^${pathAppend}$" $dotFile &>/dev/null; then
     printf "${yellow}$_pwd already added to PATH permanently in $dotFile"
   elif echo $pathAppend >> $dotFile; then
-    printf "${green}$_pwd added to PATH permanently in $dotFile"
+    printf "${green}$_pwd added to PATH permanently in $dotFile\n"
     exec /bin/bash
   else
     printf "${red}There was an error adding $_pwd to PATH in $dotFile"
@@ -125,7 +125,7 @@ function init()
 
   if [[ $1 == "-d" ]]; then
     if [[ -e $config ]]; then
-      for i in name primary secondary tertiary; do
+      for i in ${rcFields[@]}; do
         case $i in
           name)
             printf "${reset}${fieldDescriptions[name]}: ${lightYellow}"
