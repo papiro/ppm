@@ -186,9 +186,11 @@ Commands:
 
 ${BGblue}${lightYellow}   Primary, Secondary, and Tertiary are the Git repo URL's you will use to version-control/backup your project.${fillLine}
 ${fillLine}
-   git@<domain:username><project-name>.git <-- Make sure to enter the full identifier, and that the repos already exist.  PPM will not create the repos for you.${fillLine}
+  git@<domain:username><project-name>.git <-- Make sure to enter the full identifier, and that the repos already exist.  PPM will not create the repos for you.${fillLine}
 ${fillLine} 
-   To create a local repo: ${bold}git init --bare /var/backups/<project-name>.git${fillLine}${reset}
+  To create a local repo: ${bold}git init --bare /var/backups/<project-name>.git${unbold}.${fillLine}
+${fillLine}
+  If ${bold}ppm${unbold} is run with an argument other than a listed command or flag, then ppm will look for a script in your project directory with that name and execute it.  This is cool because it allows you to give your local scripts any names they want and not have them collide with environment program names or builtins.  For example, you may have a script in your project's root called "ls" and you may execute it by running ${bold}ppm ls${unbold}.${fillLine}${reset}
 EOT
   printf "${reset}"
 }
@@ -212,6 +214,8 @@ fi
 
 if [[ ${1:0:1} == "-" || `type -t $1` == "function" ]]; then
   `${!1}` $@
+elif [ -z $1 ]; then
+  exit 0
 else
   $_pwd/$1  
 fi
