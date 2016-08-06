@@ -128,8 +128,12 @@ function init()
       for i in ${rcFields[@]}; do
         case $i in
           name)
-            printf "${reset}${fieldDescriptions[name]}: ${lightYellow}"
-            read name
+            if [[ -n $2 ]]; then
+              name=$2
+            else
+              printf "${reset}${fieldDescriptions[name]}: ${lightYellow}"
+              read name
+            fi
             val=$name
             ;;
           *)
