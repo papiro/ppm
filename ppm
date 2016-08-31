@@ -5,7 +5,7 @@ readonly _pwd=`pwd`
 readonly _dirname=`dirname $0`
 source $_dirname/binz/colorsh &>/dev/null  
 
-readonly config=${_dirname}/ppm.conf
+readonly _config=${_dirname}/ppm.conf
 
 read -d "" rcTemplate << EOS
 # Project name
@@ -96,7 +96,7 @@ function path()
 function add()
 {
   if [[ $1 == "-d" ]]; then
-    default=`get primary $config`
+    default=`get primary $_config`
     shift 1
   fi
   for i in $@; do
@@ -124,7 +124,7 @@ function init()
   fi
 
   if [[ $1 == "-d" ]]; then
-    if [[ -e $config ]]; then
+    if [[ -e $_config ]]; then
       for i in ${rcFields[@]}; do
         case $i in
           name)
@@ -137,13 +137,13 @@ function init()
             val=$name
             ;;
           *)
-            val=`get $i $config`${name}.git
+            val=`get $i $_config`${name}.git
             ;;
         esac
         rcTemplate=${rcTemplate//$i=/$i=$val}
       done
     else
-      printf "${red}No ppm.conf found in $config directory${reset}"
+      printf "${red}No ppm.conf found in $_config directory${reset}"
       exit 1
     fi
   else
@@ -169,6 +169,11 @@ function init()
   installRemotes
 }
 
+function config () {
+  cat $_config
+  echo $_config
+}
+
 function -h()
 {
   cat <<EOT
@@ -182,6 +187,7 @@ Commands:
   add               add, initialize, and update a git submodule for the current project
   path              add the current directory to the PATH permanently by writing an export statement to the ~/.bashrc
   clean             remove git remotes fetch/push URLs named "origin"
+  config            view the config currently in use
 
   -h      display usage instructions
   -v      display the last tagged version
@@ -214,6 +220,7 @@ if [[ -z $1 ]]; then
   printf "5. add\n"
   printf "6. path\n"
   printf "7. clean\n"
+  printf "8. config\n"
 fi
 
 if [[ ${1:0:1} == "-" || `type -t $1` == "function" ]]; then
