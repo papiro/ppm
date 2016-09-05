@@ -207,7 +207,7 @@ EOT
 
 function -v()
 {
-  ( cd $_dirname $>/dev/null && git tag | tail -1 )
+  ( cd $_dirname &>/dev/null && git tag | tail -1 )
 }
 
 if [[ -z $1 ]]; then
@@ -228,5 +228,5 @@ if [[ ${1:0:1} == "-" || `type -t $1` == "function" ]]; then
 elif [ -z $1 ]; then
   exit 0
 else
-  $_pwd/$1  
+  $_pwd/$1 &>/dev/null || printf "${yellow}no such script $1${reset}\n"
 fi
