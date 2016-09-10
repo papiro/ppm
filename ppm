@@ -101,8 +101,8 @@ function add()
   fi
   for i in $@; do
     repo=${default}${i}.git
-    git submodule add $repo
-    git submodule update --init --recursive
+    git submodule add $repo || exit 1
+    git submodule update --init --recursive || exit 1
 
     # cd into each submodule and install their git remotes
     (cd $(echo $repo | grep -oP "\w*(?=\.git)") && installRemotes)
