@@ -1,3 +1,5 @@
+* NOTE: PPM is now a defunct project but is added here for reference and/or entertainment *
+
 # PPM
 ## Phreedom Package Manager
 ### Reinventing the Wheel
